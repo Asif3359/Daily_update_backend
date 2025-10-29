@@ -9,10 +9,29 @@ const connectDB = require("./configs/database");
 connectDB();
 
 var indexRouter = require("./routes/index");
+var notesRouter = require("./routes/notes");
 
 var app = express();
 
-app.use(cors());
+// Configure CORS for multiple environments
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',           // Web localhost
+    'http://localhost:3001',           // Alternative web port
+    'http://127.0.0.1:3000',           // Web localhost IP
+    'http://10.0.2.2:3000',            // Android emulator
+    'http://192.168.1.0/24',           // Local network range (update as needed)
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+// For development, you might want to allow all origins
+// Uncomment the line below if you want to allow all origins
+// app.use(cors());
+
+// Use configured CORS
+app.use(cors(corsOptions));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
@@ -24,7 +43,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-
+app.use("/api/notes", notesRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });

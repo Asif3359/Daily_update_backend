@@ -1,52 +1,43 @@
 // models/Note.js
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
 
-const NoteSchema = new Schema({
+const noteSchema = new mongoose.Schema({
   _id: {
-    type: Schema.Types.ObjectId, // Compatible with Realm.BSON.ObjectId
+    type: String, // Store Realm ObjectId as string
     required: true,
   },
   title: {
     type: String,
     required: true,
-    default: "",
+    trim: true,
   },
   note: {
     type: String,
     required: true,
-    default: "",
-  },
-  userEmail: {
-    type: String,
-    required: true,
-    index: true,
   },
   createdAt: {
     type: Date,
     required: true,
-    default: Date.now,
   },
   updatedAt: {
     type: Date,
     required: true,
-    default: Date.now,
   },
-  isDeleted: {
-    type: Boolean,
-    default: false, // Soft delete for sync purposes
+  userEmail: {
+    type: String,
+    required: true,
+    index: true, // For faster queries by user
   },
-  deletedAt: {
-    type: Date,
-    default: null,
-  },
+  syncStatus: {
+    type: Number,
+    default: 1, // Backend notes are always synced
+    enum: [0, 1]
+  }
+}, {
+  timestamps: true, // Adds createdAt and updatedAt automatically
 });
 
-// Index for efficient sync queries
-NoteSchema.index({ userEmail: 1, updatedAt: 1 });
-NoteSchema.index({ userEmail: 1, isDeleted: 1 });
+// Compound index for efficient querying
+noteSchema.index({ userEmail: 1, updatedAt: -1 });
 
-const Note = mongoose.model("Note", NoteSchema);
-
-module.exports = Note;
-
+module.exports = mongoose.model('Note', noteSchema);
